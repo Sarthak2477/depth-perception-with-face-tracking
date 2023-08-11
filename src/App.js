@@ -8,6 +8,8 @@ import Webcam from "react-webcam";
 import * as facemesh from "@tensorflow-models/facemesh";
 import * as tf from "@tensorflow/tfjs";
 
+const [cameraRotation, setCameraRotation] = useState([0, 0, 0]);
+
 export default function App() {
   const webcamref = useRef(null);
   const boxPosition = [0, 2, 0];
@@ -16,13 +18,6 @@ export default function App() {
     boxPosition[1] + 5,
     boxPosition[2],
   ];
-
-  async function init() {
-    await tf.setBackend("webgl");
-    // Now you can use TensorFlow.js functionality
-  }
-
-  const [cameraRotation, setCameraRotation] = useState([0, 0, 0]);
 
   const runFacemesh = async () => {
     const net = await facemesh.load({
@@ -48,20 +43,15 @@ export default function App() {
         const rotationY = face.annotations.midwayBetweenEyes[0][0];
         const rotationX = face.annotations.midwayBetweenEyes[0][1];
         setCameraRotation([rotationX, rotationY, 0]);
-        console.log(cameraRotation);
       }
+      console.log(faces);
     }
   };
 
   const Box = () => {
     const [ref, api] = useBox(() => ({ mass: 1, position: boxPosition }));
     return (
-      <mesh
-        onClick={() => {
-          api.velocity.set(0, 0, 2);
-        }}
-        ref={ref}
-      >
+      <mesh ref={ref}>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial color="hotpink" />
       </mesh>
@@ -82,7 +72,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    init();
     runFacemesh();
   }, []);
 
